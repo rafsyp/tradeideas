@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org">
+<head>
+<title>TradeIdeas Dashboard</title>
+
+<style type="text/css">
+ul {
+	font-size: 1.1em;
+	width: 10em;
+	overflow: hidden; /*establish margin clearance for li*/
+}
+
+li {
+	font-size: 1.1em;
+	padding: .25em;
+}
+</style>
+
+<link rel="stylesheet"
+	href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+	integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
+	crossorigin="anonymous">
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"
+	integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+	crossorigin="anonymous"></script>
+<script
+	src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"
+	integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut"
+	crossorigin="anonymous"></script>
+<script
+	src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"
+	integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
+	crossorigin="anonymous"></script>
+
+<script type="text/javascript">
+	$(document).ready(function() {
+		$('.nBtn, .table .eBtn').on('click', function(event) {
+			event.preventDefault();
+			var href = $(this).attr('href');
+			var text = $(this).text();
+			var today = new Date();
+			var dd = today.getDate();
+			var mm = today.getMonth() + 1; 
+			var yyyy = today.getFullYear();
+			var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+
+			if (dd < 10) {
+			  dd = '0' + dd;
+			}
+
+			if (mm < 10) {
+			  mm = '0' + mm;
+			}
+
+			today = mm + '/' + dd + '/' + yyyy;
+
+			if(text=='Edit'){
+			$.get(href,function(trade,status){
+				$('.myForm #id').val(trade.id);
+				$('.myForm #ticker').val(trade.ticker);
+				$('.myForm #tradetype').val(trade.tradetype);
+				$('.myForm #time').val(trade.time);
+				$('.myForm #date').val(trade.date);
+				$('.myForm #date').val(trade.comment);
+				
+			});
+			
+			$('#exampleModal').modal();
+			}
+			else{
+				$('.myForm #id').val('');
+				$('.myForm #ticker').val('');
+				$('.myForm #tradetype').val('');
+				$('.myForm #time').val(time);
+				$('.myForm #date').val(today);
+				$('.myForm #comment').val('');
+				$('#exampleModal').modal();
+			}
+
+		});
+		
+	});
+	
+</script>
+
+
+</head>
+
+<body>
+	<div class="container">
+		<button class="btn btn-success nBtn">New</button>
+		<form action="/logout" method="post" class="float-right">
+			<input type="hidden" th:name="${_csrf.parameterName}"
+				th:value="${_csrf.token}" />
+			<button type="submit" class="btn btn-secondary">Logout</button>
+		</form>
+		<div class="card">
+			<div class="card-block">
+				<table class="table table-hover" id="table">
+					<thead>
+						<tr>
+							<th>Stock</th>
+							<th>Direction</th>
+							<th>Time</th>
+							<th>Date</th>
+							<th>Comment</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="trade : ${bookPage.content}">
+							<td th:text="${trade.ticker}">Stock</td>
+							<td th:text="${trade.tradetype}">Direction</td>
+							<td th:text="${trade.time}">Time</td>
+							<td th:text="${trade.date}">Date</td>
+							<td th:text="${trade.comment}">Comment</td>
+							<td><a th:href="@{findOne/(id=${trade.id})}"
+								class="btn btn-primary eBtn">Edit</a> <a
+								th:href="@{delete/(id=${trade.id})}"
+								class="btn btn-primary dBtn">Delete</a></td>
+
+						</tr>
+					</tbody>
+				</table>
+				<hr />
+				<ul class="nav nav-pills">
+					<li class="pagination" th:if="${bookPage.totalPages > 0}"
+						th:each="pageNumber : ${pageNumbers}"><a
+						th:href="@{/dashboard(size=${bookPage.size}, page=${pageNumber})}"
+						th:text=${pageNumber}
+						th:class="${pageNumber==bookPage.number + 1} ? active"></a></li>
+				</ul>
+			</div>
+		</div>
+
+		<div class="myForm">
+			<form th:action="@{/save}" method="post">
+				<div class="modal fade" id="exampleModal" tabindex="-1"
+					role="dialog" aria-labelledby="exampleModalLabel"
+					aria-hidden="true">
+					<div class="modal-dialog" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="exampleModalLabel">Update or
+									Create</h5>
+								<button type="button" class="close" data-dismiss="modal"
+									aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body">
+
+								<div class="form-group">
+									<label for="id" class="col-form-label">ID(Leave Blank
+										to Create):</label> <input type="text" class="form-control" id="id"
+										name='id' value=" " />
+								</div>
+
+								<div class="form-group">
+									<label for="ticker" class="col-form-label">Ticker:</label> <input
+										type="text" class="form-control" id="ticker" name='ticker'
+										value=" " />
+								</div>
+
+								<div class="form-group">
+									<label for="tradetype" class="col-form-label">Tradetype:</label>
+									<input type="text" class="form-control" id="tradetype"
+										name='tradetype' value=" " />
+								</div>
+
+								<div class="form-group">
+									<label for="time" class="col-form-label">Time:</label> <input
+										type="text" class="form-control" id="time" name='time'
+										value=" " />
+								</div>
+
+								<div class="form-group">
+									<label for="date" class="col-form-label">Date:</label> <input
+										type="text" class="form-control" id="date" name='date'
+										value=" " />
+								</div>
+
+								<div class="form-group">
+									<label for="comment" class="col-form-label">Comment:</label> <input
+										type="text" class="form-control" id="comment" name='comment'
+										value=" " />
+								</div>
+
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary"
+									data-dismiss="modal">Close</button>
+								<input type="submit" class="btn btn-primary" value="save" />
+							</div>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+
+
+	</div>
+</body>
+</html>
