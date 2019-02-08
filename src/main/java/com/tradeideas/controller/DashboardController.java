@@ -101,7 +101,7 @@ public class DashboardController extends BaseController {
 	@RequestMapping(value = "/findOne", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public Trade find(long id) {
-		logger.info("> find");
+		logger.info("> find" + id);
 		return tradeservice.findbyId(id);
 
 	}
