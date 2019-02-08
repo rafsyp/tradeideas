@@ -36,7 +36,7 @@ public class TradeService {
 	 */
 
 	public Page<Trade> findPaginated(User user, Pageable pageable) {
-		List<Trade> trades = userRepo.findByUsername(user.getUsername()).getTrades();
+		List<Trade> trades = tradeRepo.findByUser(user);
 		int pageSize = pageable.getPageSize();
 		int currentPage = pageable.getPageNumber();
 		int startItem = currentPage * pageSize;

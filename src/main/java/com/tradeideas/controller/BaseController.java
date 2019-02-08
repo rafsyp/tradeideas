@@ -45,7 +45,7 @@ public class BaseController {
     public ResponseEntity<Map<String, Object>> handleException(
             Exception exception, HttpServletRequest request) {
 
-        logger.error("> handleException");
+        logger.error("> ---------------- beginning of handledException");
         logger.error("- Exception: ", exception);
 
         ExceptionAttributes exceptionAttributes = new ExceptionAttributes();
@@ -54,7 +54,7 @@ public class BaseController {
                 .getExceptionAttributes(exception, request,
                         HttpStatus.INTERNAL_SERVER_ERROR);
 
-        logger.error("< handleException");
+        logger.error("< ----------------- end of handledException - Scroll up for beginning");
         return new ResponseEntity<Map<String, Object>>(responseBody,
                 HttpStatus.INTERNAL_SERVER_ERROR);
     }

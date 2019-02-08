@@ -42,7 +42,7 @@ public class DashboardController extends BaseController {
 	@RequestMapping(value = "/dashboard", method = RequestMethod.GET)
 	public String listTrades(Model model, @RequestParam("page") Optional<Integer> page,
 			@RequestParam("size") Optional<Integer> size, @AuthenticationPrincipal User user) {
-		logger.info("> getlistTrades");
+		logger.info("> starting to get page of trades");
 		int currentPage = page.orElse(1);
 		int pageSize = size.orElse(5);
 
@@ -55,7 +55,7 @@ public class DashboardController extends BaseController {
 			List<Integer> pageNumbers = IntStream.rangeClosed(1, totalPages).boxed().collect(Collectors.toList());
 			model.addAttribute("pageNumbers", pageNumbers);
 		}
-		logger.info("< getlistTrades");
+		logger.info("< end get page of trades");
 		return "dashboard";
 	}
 
@@ -70,9 +70,9 @@ public class DashboardController extends BaseController {
 	
 	@PostMapping("/save")
 	public String save(@AuthenticationPrincipal User user, Trade trade) {
-		logger.info("> save");
+		logger.info("> saving trade");
 		tradeservice.save(user, trade);
-		logger.info("< save");
+		logger.info("< saved: "+trade.getTicker()+" to " +user.getUsername());
 		return "redirect:/dashboard";
 	}
 	
@@ -101,7 +101,7 @@ public class DashboardController extends BaseController {
 	@RequestMapping(value = "/findOne", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public Trade find(long id) {
-		logger.info("> find" + id);
+		logger.info("> finding trade by id: " + id);
 		return tradeservice.findbyId(id);
 
 	}

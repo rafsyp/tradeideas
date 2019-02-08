@@ -17,7 +17,6 @@ public class LoginController extends BaseController {
   
   @GetMapping("/login")
   public String login() {
-	logger.info("> logging in");
     return "login";
   }
   
@@ -29,7 +28,7 @@ public class LoginController extends BaseController {
   
   @PostMapping("/register")
   public String registerPost (User user) {
-	logger.info("> registered");
+	logger.info("> registered " + user.getUsername());
     userService.save(user);
     return "redirect:/login";
   }
