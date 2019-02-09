@@ -51,17 +51,15 @@ public class TradeController extends BaseController {
 	}
 
 	/**
-	 * This endpoint is used by rest clients to upload trades from a automated trade
-	 * scanning bot. WIP: add api key for users to login
+	 * This endpoint is used by rest clients to upload trade ideas from an automated trade
+	 * scanning bot with basic auth.
 	 */
 
 	@RequestMapping(value = "/api", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Trade> createTradeFromApi(@RequestBody Trade trade) {
-		System.out.println("hi");
-
+	public ResponseEntity<Trade> createTradeFromApi(@RequestBody Trade trade, @AuthenticationPrincipal User user) {
 		logger.info("> added trade idea from api");
 
-		Trade savedTrade = tradeservice.saveApiTrade(trade);
+		Trade savedTrade = tradeservice.save(user, trade);
 
 		logger.info("< added trade idea from api");
 		return new ResponseEntity<Trade>(savedTrade, HttpStatus.CREATED);

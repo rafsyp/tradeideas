@@ -79,12 +79,12 @@ public class TradeService {
 		return tradeRepo.save(trade);
 	}
 
-	public Trade saveApiTrade(Trade trade) {
-		return tradeRepo.save(trade);
-	}
-
 	public List<Trade> getallTrades() {
 		return tradeRepo.findAll();
+	}
+	
+	public List<Trade> getallTradesbyUser(User user) {
+		return tradeRepo.findByUser(user);
 	}
 
 }

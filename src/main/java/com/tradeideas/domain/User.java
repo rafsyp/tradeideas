@@ -48,7 +48,6 @@ public class User {
 		this.id = id;
 	}
 
-	@Email
 	public String getUsername() {
 		return username;
 	}
