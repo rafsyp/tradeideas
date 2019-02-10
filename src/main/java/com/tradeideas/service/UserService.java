@@ -13,38 +13,43 @@ import com.tradeideas.security.Authority;
 
 @Service
 public class UserService {
-  
-  @Autowired
-  private UserRepository userRepo;
-  
-  @Autowired
-  private PasswordEncoder passwordEncoder;
-  
-  public User findbyUsername (String name) {
-	  return userRepo.findByUsername(name);
-  }
-  
-  public void update(User user) {
-	  userRepo.save(user);
-  }
-  
-  /**
-   * Method used to register a new user.  Their password is encrypted and they are added an authority then saved to the Database 
-   * by the userrepo.
-   */
-  
-  public User save (User user) {
-    String encodedPassword = passwordEncoder.encode(user.getPassword());
-    user.setPassword(encodedPassword);
-    
-    Authority authority = new Authority();
-    authority.setAuthority("ROLE_USER");
-    authority.setUser(user);
-    
-    user.getAuthorities().add(authority);
-    
-    return userRepo.save(user);
-  }
-  
-  
+
+	@Autowired
+	private UserRepository userRepo;
+
+	@Autowired
+	private PasswordEncoder passwordEncoder;
+
+	public User findbyUsername(String name) {
+		return userRepo.findByUsername(name);
+	}
+
+	public void update(User user) {
+		userRepo.save(user);
+	}
+
+	/**
+	 * Method used to register a new user. Their password is encrypted and they are
+	 * added an authority then saved to the Database by the userrepo.
+	 */
+
+	public User save(User user) {
+		String encodedPassword = passwordEncoder.encode(user.getPassword());
+		user.setPassword(encodedPassword);
+
+		Authority authority = new Authority();
+		authority.setAuthority("ROLE_USER");
+		authority.setUser(user);
+
+		user.getAuthorities().add(authority);
+
+		return userRepo.save(user);
+	}
+
+	public boolean isUserPresent(String username) {
+		User user = userRepo.findByUsername(username);
+		if (user==null) return false;
+		return true;
+	}
+
 }
