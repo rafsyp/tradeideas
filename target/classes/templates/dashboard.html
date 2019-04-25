@@ -32,55 +32,185 @@ li {
 	integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
 	crossorigin="anonymous"></script>
 
+<link rel="stylesheet" type="text/css"
+	href="https://cdn.datatables.net/v/bs4/dt-1.10.18/datatables.min.css" />
+
+<script type="text/javascript"
+	src="https://cdn.datatables.net/v/bs4/dt-1.10.18/datatables.min.js"></script>
+
+<script
+	src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.js"></script>
+<script
+	src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
+<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+
 <script type="text/javascript">
-	$(document).ready(function() {
-		$('.nBtn, .table .eBtn').on('click', function(event) {
-			event.preventDefault();
-			var href = $(this).attr('href');
-			var text = $(this).text();
-			var today = new Date();
-			var dd = today.getDate();
-			var mm = today.getMonth() + 1; 
-			var yyyy = today.getFullYear();
-			var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+	$(document)
+			.ready(
+					function() {
+						$('.nBtn, .trades .eBtn .js-edit').on(
+								'click',
+								function(event) {
+									event.preventDefault();
+									var href = $(this).attr('href');
+									var text = $(this).text();
+									var today = new Date();
+									var dd = today.getDate();
+									var mm = today.getMonth() + 1;
+									var yyyy = today.getFullYear();
+									var time = today.getHours() + ":"
+											+ today.getMinutes() + ":"
+											+ today.getSeconds();
+									if (dd < 10) {
+										dd = '0' + dd;
+									}
+									if (mm < 10) {
+										mm = '0' + mm;
+									}
+									today = mm + '/' + dd + '/' + yyyy;
+									if (text == 'Edit') {
+										$.get(href, function(trade, status) {
+											$('.myForm #id').val(trade.id);
+											$('.myForm #ticker').val(
+													trade.ticker);
+											$('.myForm #tradetype').val(
+													trade.tradetype);
+											$('.myForm #time').val(trade.time);
+											$('.myForm #date').val(trade.date);
+											$('.myForm #comment').val(
+													trade.comment);
 
-			if (dd < 10) {
-			  dd = '0' + dd;
-			}
+										});
 
-			if (mm < 10) {
-			  mm = '0' + mm;
-			}
+										$('#exampleModal').modal();
+									} else {
+										$('.myForm #id').val('');
+										$('.myForm #ticker').val('');
+										$('.myForm #tradetype').val('');
+										$('.myForm #time').val(time);
+										$('.myForm #date').val(today);
+										$('.myForm #comment').val('');
+										$('#exampleModal').modal();
+									}
+								});
+						var table = $("#trades")
+								.DataTable(
+										{
+											ajax : {
+												url : "/apilist",
+												dataSrc : ""
+											},
 
-			today = mm + '/' + dd + '/' + yyyy;
+											columns : [
+													{
+														data : "ticker",
+													},
+													{
+														data : "tradetype"
+													},
+													{
+														data : "comment"
+													},
+													{
+														data : "date"
+													},
+													{
+														data : "ticker",
+														render : function(data) {
+															return "<button class='btn-link js-chart' data-trade-ticker=" + data + ">Chart</button>";
+														}
+													},
+													{
+														data : "id",
+														render : function(data) {
+															return "<button class='btn-link js-edit' data-trade-id=" + data + ">Edit</button>";
+														}
+													},
+													{
+														data : "id",
+														render : function(data) {
+															return "<button class='btn-link js-delete' data-trade-id=" + data + ">Delete</button>";
+														}
+													}, ]
+										});
 
-			if(text=='Edit'){
-			$.get(href,function(trade,status){
-				$('.myForm #id').val(trade.id);
-				$('.myForm #ticker').val(trade.ticker);
-				$('.myForm #tradetype').val(trade.tradetype);
-				$('.myForm #time').val(trade.time);
-				$('.myForm #date').val(trade.date);
-				$('.myForm #comment').val(trade.comment);
-				
-			});
-			
-			$('#exampleModal').modal();
-			}
-			else{
-				$('.myForm #id').val('');
-				$('.myForm #ticker').val('');
-				$('.myForm #tradetype').val('');
-				$('.myForm #time').val(time);
-				$('.myForm #date').val(today);
-				$('.myForm #comment').val('');
-				$('#exampleModal').modal();
-			}
+						$("#trades")
+								.on(
+										"click",
+										".js-delete",
+										function() {
+											var button = $(this);
 
-		});
-		
-	});
-	
+											bootbox
+													.confirm(
+															"Are you sure you want to delete this trade idea?",
+															function(result) {
+																if (result) {
+																	$
+																			.ajax({
+																				url : "/delete/"
+																						+ button
+																								.attr("data-trade-id"),
+																				success : function() {
+																					table
+																							.row(
+																									button
+																											.parents("tr"))
+																							.remove()
+																							.draw();
+																				}
+																			});
+																}
+															});
+										});
+
+						$("#trades").on(
+								"click",
+								".js-edit",
+								function() {
+									var button = $(this);
+									$.ajax({
+										url : "/edit/"
+												+ button.attr("data-trade-id"),
+										success : function(data) {
+											$('.myForm #id').val(data.id);
+											$('.myForm #ticker').val(
+													data.ticker);
+											$('.myForm #tradetype').val(
+													data.tradetype);
+											$('.myForm #time').val(data.time);
+											$('.myForm #date').val(data.date);
+											$('.myForm #comment').val(
+													data.comment);
+											$('#exampleModal').modal();
+										}
+									});
+								});
+
+						$('.closechart').on('click', function(event) {
+							$('.modal').modal('hide');
+						});
+
+						$("#trades").on("click", ".js-chart", function() {
+							var button = $(this);
+							var symbol1 = button.attr("data-trade-ticker");
+							new TradingView.widget({
+								"autosize" : false,
+								"symbol" : symbol1,
+								"interval" : "D",
+								"timezone" : "Etc/UTC",
+								"theme" : "Light",
+								"style" : "1",
+								"locale" : "en",
+								"toolbar_bg" : "#f1f3f6",
+								"enable_publishing" : false,
+								"allow_symbol_change" : true,
+								"container_id" : "tradingview_6ee8f"
+							});
+							$('#tradeModal').modal();
+						});
+
+					});
 </script>
 
 
@@ -96,39 +226,21 @@ li {
 		</form>
 		<div class="card">
 			<div class="card-block">
-				<table class="table table-hover" id="table">
+				<table id="trades" class="table table-bordered table-hover">
 					<thead>
 						<tr>
-							<th>Stock</th>
-							<th>Direction</th>
-							<th>Time</th>
-							<th>Date</th>
+							<th>Ticker</th>
+							<th>Trade Type</th>
 							<th>Comment</th>
+							<th>Date</th>
+							<th>Chart</th>
+							<th>Edit</th>
+							<th>Delete</th>
 						</tr>
 					</thead>
-					<tbody>
-						<tr th:each="trade : ${bookPage.content}">
-							<td th:text="${trade.ticker}">Stock</td>
-							<td th:text="${trade.tradetype}">Direction</td>
-							<td th:text="${trade.time}">Time</td>
-							<td th:text="${trade.date}">Date</td>
-							<td th:text="${trade.comment}">Comment</td>
-							<td><a th:href="@{findOne/(id=${trade.id})}"
-								class="btn btn-primary eBtn">Edit</a> <a
-								th:href="@{delete/(id=${trade.id})}"
-								class="btn btn-primary dBtn">Delete</a></td>
-
-						</tr>
-					</tbody>
+					<tbody></tbody>
 				</table>
 				<hr />
-				<ul class="nav nav-pills">
-					<li class="pagination" th:if="${bookPage.totalPages > 0}"
-						th:each="pageNumber : ${pageNumbers}"><a
-						th:href="@{/dashboard(size=${bookPage.size}, page=${pageNumber})}"
-						th:text=${pageNumber}
-						th:class="${pageNumber==bookPage.number + 1} ? active"></a></li>
-				</ul>
 			</div>
 		</div>
 
@@ -150,9 +262,8 @@ li {
 							<div class="modal-body">
 
 								<div class="form-group">
-									<label for="id" class="col-form-label">ID(Leave Blank
-										to Create):</label> <input type="text" class="form-control" id="id"
-										name='id' value=" " />
+									<input type="hidden" class="form-control" id="id" name='id'
+										value=" " />
 								</div>
 
 								<div class="form-group">
@@ -197,7 +308,28 @@ li {
 			</form>
 		</div>
 
+		<div class="modal" id="tradeModal" tabindex="-1" role="dialog">
+
+			<!-- TradingView Widget BEGIN -->
+			<div class="tradingview-widget-container">
+				<div id="tradingview_6ee8f"></div>
+				<div class="tradingview-widget-copyright">
+					<a href="https://www.tradingview.com/symbols/NASDAQ-AAPL/"
+						rel="noopener" target="_blank"></a> by TradingView
+				</div>
+
+			</div>
+			<!-- TradingView Widget END -->
+			<div
+				style="display: flex; align-items: center; justify-content: center; margin-bottom: 2rem;"
+				class="footer">
+				<button class="btn btn-success closechart">Close</button>
+			</div>
+		</div>
 
 	</div>
+
 </body>
+
+
 </html>

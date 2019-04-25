@@ -7,11 +7,14 @@ import java.util.stream.IntStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -40,25 +43,9 @@ public class DashboardController extends BaseController {
      */
 
 	@RequestMapping(value = "/dashboard", method = RequestMethod.GET)
-	public String listTrades(Model model, @RequestParam("page") Optional<Integer> page,
-			@RequestParam("size") Optional<Integer> size, @AuthenticationPrincipal User user) {
-		logger.info("> starting to get page of trades");
-		int currentPage = page.orElse(1);
-		int pageSize = size.orElse(5);
-
-		Page<Trade> bookPage = tradeservice.findPaginated(user, PageRequest.of(currentPage - 1, pageSize));
-
-		model.addAttribute("bookPage", bookPage);
-
-		int totalPages = bookPage.getTotalPages();
-		if (totalPages > 0) {
-			List<Integer> pageNumbers = IntStream.rangeClosed(1, totalPages).boxed().collect(Collectors.toList());
-			model.addAttribute("pageNumbers", pageNumbers);
-		}
-		logger.info("< end get page of trades");
+	public String listTrades() {
 		return "dashboard";
 	}
-
 	
     /**
      * Method that saves and updates trades from the edit and new button on dashboard.html found in resources/templates
@@ -84,9 +71,10 @@ public class DashboardController extends BaseController {
      * @return returns the dashboard.html page found in resources/templates.
      */
 
-	@GetMapping("/delete")
-	public String delete(Long id) {
-		logger.info("> deleted trade with id: " + id );
+	@RequestMapping(value = "/delete/{id}")
+	@ResponseBody
+	public String delete(@PathVariable("id") Long id) {
+		logger.info("> deleted trade with id: " +id );
 		tradeservice.deleteTradebyID(id);
 		return "redirect:/dashboard";
 	}
@@ -98,12 +86,11 @@ public class DashboardController extends BaseController {
      * @return returns the trade object that was selected in the edit form
      */
 
-	@RequestMapping(value = "/findOne", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/edit/{id}")
 	@ResponseBody
-	public Trade find(long id) {
+	public Trade edit(@PathVariable("id") Long id) {
 		logger.info("> finding trade by id: " + id);
 		return tradeservice.findbyId(id);
-
 	}
 
 }

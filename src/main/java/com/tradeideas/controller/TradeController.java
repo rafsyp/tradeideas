@@ -1,5 +1,7 @@
 package com.tradeideas.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.tradeideas.domain.Trade;
 import com.tradeideas.domain.User;
@@ -63,5 +66,12 @@ public class TradeController extends BaseController {
 
 		logger.info("< added trade idea from api");
 		return new ResponseEntity<Trade>(savedTrade, HttpStatus.CREATED);
+	}
+	
+	@RequestMapping(value = "/apilist", method = RequestMethod.GET)
+	@ResponseBody 
+	public List<Trade> getTradeList(@AuthenticationPrincipal User user) {
+		logger.info("> getting list of all trades from API");
+		return tradeservice.getallTradesbyUser(user);
 	}
 }
