@@ -31,15 +31,7 @@ public class DashboardController extends BaseController {
 	private TradeService tradeservice;
 	
     /**
-     * Web service endpoint to fetch all trades from the logged in user. This method populates a page object with a list of trades
-     * fetched by the tradeservice autowired member variable.  The page is added to a model which is used by dashboard.html
-     * to display the list of trades to the user. 
-     * 
-     * @param  model  the list of trade objects that will be built up and passed over to thymeleaf and displayed to the user
-     * @param  user  the user currently logged in
-     * @param  page  page object with list of trades created in dashboard.html found in resources/templates.
-     * @param  size  the number of trades per page created in dashboard.html found in resources/templates.
-     * @return returns the dashboard.html page found in resources/templates.
+		* default routing after logging in to view dashboard.html
      */
 
 	@RequestMapping(value = "/dashboard", method = RequestMethod.GET)
@@ -91,6 +83,41 @@ public class DashboardController extends BaseController {
 	public Trade edit(@PathVariable("id") Long id) {
 		logger.info("> finding trade by id: " + id);
 		return tradeservice.findbyId(id);
+	}
+	
+    /**
+     * 
+     * Old method of retrieving a paginated list of trades
+     * 
+     * Web service endpoint to fetch all trades from the logged in user. This method populates a page object with a list of trades
+     * fetched by the tradeservice autowired member variable.  The page is added to a model which is used by dashboard.html
+     * to display the list of trades to the user. 
+     * 
+     * @param  model  the list of trade objects that will be built up and passed over to thymeleaf and displayed to the user
+     * @param  user  the user currently logged in
+     * @param  page  page object with list of trades created in dashboard.html found in resources/templates.
+     * @param  size  the number of trades per page created in dashboard.html found in resources/templates.
+     * @return returns the dashboard.html page found in resources/templates.
+     */
+	
+	@RequestMapping(value = "/getpageoftrades", method = RequestMethod.GET)
+	public String listTrades(Model model, @RequestParam("page") Optional<Integer> page,
+			@RequestParam("size") Optional<Integer> size, @AuthenticationPrincipal User user) {
+		logger.info("> starting to get page of trades");
+		int currentPage = page.orElse(1);
+		int pageSize = size.orElse(5);
+
+		Page<Trade> bookPage = tradeservice.findPaginated(user, PageRequest.of(currentPage - 1, pageSize));
+
+		model.addAttribute("bookPage", bookPage);
+
+		int totalPages = bookPage.getTotalPages();
+		if (totalPages > 0) {
+			List<Integer> pageNumbers = IntStream.rangeClosed(1, totalPages).boxed().collect(Collectors.toList());
+			model.addAttribute("pageNumbers", pageNumbers);
+		}
+		logger.info("< end get page of trades");
+		return "dashboard";
 	}
 
 }

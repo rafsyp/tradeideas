@@ -23,11 +23,37 @@ import com.tradeideas.domain.User;
 import com.tradeideas.service.TradeService;
 
 @Controller
-public class TradeController extends BaseController {
+public class ApiController extends BaseController {
 
 	@Autowired
 	private TradeService tradeservice;
 
+	/**
+	 * This endpoint is used by rest clients to upload trade ideas from an automated trade
+	 * scanning bot with basic auth.
+	 */
+
+	@RequestMapping(value = "/api", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Trade> createTradeFromApi(@RequestBody Trade trade, @AuthenticationPrincipal User user) {
+		logger.info("> added trade idea from api");
+
+		Trade savedTrade = tradeservice.save(user, trade);
+
+		logger.info("< added trade idea from api");
+		return new ResponseEntity<Trade>(savedTrade, HttpStatus.CREATED);
+	}
+	
+	/**
+	 * This endpoint is used by dashboard.html to retrieve a list of trades and pass it to Datatables.
+	 */
+	
+	@RequestMapping(value = "/apilist", method = RequestMethod.GET)
+	@ResponseBody 
+	public List<Trade> getTradeList(@AuthenticationPrincipal User user) {
+		logger.info("> getting list of all trades from API");
+		return tradeservice.getallTradesbyUser(user);
+	}
+	
 	/**
 	 * Old form for adding a trade with addtrade.html
 	 */
@@ -52,26 +78,5 @@ public class TradeController extends BaseController {
 		logger.info("< added trade idea from addtrade form");
 		return "redirect:/dashboard";
 	}
-
-	/**
-	 * This endpoint is used by rest clients to upload trade ideas from an automated trade
-	 * scanning bot with basic auth.
-	 */
-
-	@RequestMapping(value = "/api", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Trade> createTradeFromApi(@RequestBody Trade trade, @AuthenticationPrincipal User user) {
-		logger.info("> added trade idea from api");
-
-		Trade savedTrade = tradeservice.save(user, trade);
-
-		logger.info("< added trade idea from api");
-		return new ResponseEntity<Trade>(savedTrade, HttpStatus.CREATED);
-	}
 	
-	@RequestMapping(value = "/apilist", method = RequestMethod.GET)
-	@ResponseBody 
-	public List<Trade> getTradeList(@AuthenticationPrincipal User user) {
-		logger.info("> getting list of all trades from API");
-		return tradeservice.getallTradesbyUser(user);
-	}
 }
